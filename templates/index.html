@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasySave - Ultimate AI Media Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body {
+            background: #090d16;
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url('https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 35px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            width: 520px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        h1 { margin: 0 0 5px 0; font-size: 24px; color: #1e293b; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        h1 i { color: #3b82f6; }
+        p.subtitle { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+        .input-group { position: relative; margin-bottom: 15px; }
+        input {
+            width: 100%;
+            padding: 13px 16px 13px 45px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            color: #1e293b;
+            font-size: 14px;
+            outline: none;
+        }
+        .input-group i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+        }
+        input:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); background: #fff; }
+        button.action-btn {
+            width: 100%;
+            padding: 13px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            color: white;
+            background: #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        button.action-btn:hover { background: #2563eb; }
+
+        .gemini-ad-box {
+            margin-top: 22px;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            border: 1px solid #6366f1;
+            padding: 12px 16px;
+            border-radius: 14px;
+            color: #e2e8f0;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+        .gemini-ad-content {
+            display: flex;
+            flex-direction: column;
+        }
+        .gemini-tag {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #818cf8;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .gemini-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        .gemini-btn {
+            background: #6366f1;
+            color: white;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .gemini-btn:hover { background: #4f46e5; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1><i class="fa-solid fa-circle-down"></i> EasySave</h1>
+        <p class="subtitle">AI Smart Caption & Media Downloader</p>
+        
+        <div id="downloadForm">
+            <div class="input-group">
+                <i class="fa-brands fa-link"></i>
+                <input type="text" id="url" placeholder="Paste YouTube or Instagram link..." required>
+            </div>
+            <button type="button" class="action-btn" onclick="startBackendDownload()"><i class="fa-solid fa-wand-magic-sparkles"></i> Download Original Video</button>
+        </div>
+
+        <div class="gemini-ad-box">
+            <div class="gemini-ad-content">
+                <span class="gemini-tag"><i class="fa-solid fa-bolt"></i> Sponsored Partner</span>
+                <span class="gemini-title">Meet Gemini Advanced • Your AI Collaborator</span>
+            </div>
+            <a href="https://gemini.google.com" target="_blank" class="gemini-btn">Try Now</a>
+        </div>
+    </div>
+
+    <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
+    <script>
+        function playSound() {
+            const sound = document.getElementById('successSound');
+            if(sound) {
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log("Audio play blocked"));
+            }
+        }
+
+        async function startBackendDownload() {
+            const urlInput = document.getElementById('url').value.trim();
+
+            if (!urlInput) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Empty Field',
+                    text: 'Please paste a valid link first!',
+                    confirmButtonColor: '#3b82f6'
+                });
+                return;
+            }
+
+            playSound();
+
+            Swal.fire({
+                icon: 'info',
+                title: 'Processing with yt-dlp...',
+                text: 'Fetching original media from server. Please wait...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: urlInput })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch the video.');
+                }
+
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = 'video.mp4';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Downloaded Successfully!',
+                    text: 'Your video has been downloaded.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                document.getElementById('url').value = '';
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Download Failed',
+                    text: 'Something went wrong or the link is unsupported.',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+    </script>
+</body>
+</html>
